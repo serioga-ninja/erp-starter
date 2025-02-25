@@ -6,6 +6,12 @@ import { PrismaService } from '@app/common/db/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
+  async isEmailUnique(email: string): Promise<boolean> {
+    return !(await this.prisma.user.findFirst({
+      where: { email },
+    }));
+  }
+
   async getOneUserBy(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
   ): Promise<User | null> {
