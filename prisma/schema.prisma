@@ -32,6 +32,7 @@ model Users {
   requirePasswordChange Boolean  @default(true)
   role                  String
   entityStatus          String
+  activationCode        String   @db.VarChar(30)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

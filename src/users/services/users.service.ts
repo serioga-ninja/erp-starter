@@ -1,3 +1,4 @@
+import { StringService } from '@app/common';
 import { EntityStatus } from '@app/common/constant';
 import { PrismaService } from '@app/common/db/prisma.service';
 import { Injectable, Logger } from '@nestjs/common';
@@ -16,6 +17,7 @@ export default class UsersService {
     private readonly _prisma: PrismaService,
     private readonly _passwordService: PasswordService,
     private readonly _eventBus: EventBus,
+    private readonly _string: StringService,
   ) {}
 
   async isEmailUnique(email: string): Promise<boolean> {
@@ -32,23 +34,6 @@ export default class UsersService {
     });
   }
 
-  getManyUsers(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.UsersWhereUniqueInput;
-    where?: Prisma.UsersWhereInput;
-    orderBy?: Prisma.UsersOrderByWithRelationInput;
-  }): Promise<Users[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this._prisma.users.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
-  }
-
   async createUser(data: CreateUserData): Promise<CreateUserReturn> {
     this._logger.log(`Signing up user with email: ${data.email}`);
 
@@ -61,7 +46,8 @@ export default class UsersService {
         ...data,
         password: hashedPassword,
         salt,
-        entityStatus: EntityStatus.Active,
+        activationCode: this._string.randomString(30),
+        entityStatus: EntityStatus.Registered,
       },
     });
 
@@ -78,22 +64,5 @@ export default class UsersService {
       'updatedAt',
       'createdAt',
     ] as (keyof CreateUserReturn)[]);
-  }
-
-  async updateUser(params: {
-    where: Prisma.UsersWhereUniqueInput;
-    data: Prisma.UsersUpdateInput;
-  }): Promise<Users> {
-    const { where, data } = params;
-    return this._prisma.users.update({
-      data,
-      where,
-    });
-  }
-
-  async deleteUser(where: Prisma.UsersWhereUniqueInput): Promise<Users> {
-    return this._prisma.users.delete({
-      where,
-    });
   }
 }
