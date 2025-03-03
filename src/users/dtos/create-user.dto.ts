@@ -3,7 +3,16 @@ import { IsEmailUnique } from '../pipes';
 
 export default class CreateUserDto {
   @IsString()
-  name: string;
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+
+  @IsString()
+  password: string;
+
+  @IsString()
+  role: string;
 
   @IsEmail()
   @Validate(IsEmailUnique)

@@ -13,8 +13,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id    String  @id @default(uuid())
-  email String  @unique
-  name  String
+model Roles {
+  role        String   @id
+  displayName String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users Users[]
+}
+
+model Users {
+  id                    String   @id @default(uuid())
+  email                 String   @unique
+  firstName             String   @default("")
+  lastName              String   @default("")
+  password              String
+  salt                  String
+  requirePasswordChange Boolean  @default(true)
+  role                  String
+  entityStatus          String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  roleEntity Roles @relation(fields: [role], references: [role])
 }
