@@ -8,14 +8,40 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function main() {
-  await prisma.roles.upsert({
-    where: { role: 'superadmin', displayName: 'Super Admin' },
-    update: {},
-    create: {
-      role: 'superadmin',
-      displayName: 'Super Admin',
-    },
-  });
+  await Promise.all([
+    prisma.roles.upsert({
+      where: { role: 'admin' },
+      update: {},
+      create: {
+        role: 'admin',
+        displayName: 'Admin',
+      },
+    }),
+    prisma.roles.upsert({
+      where: { role: 'hr' },
+      update: {},
+      create: {
+        role: 'hr',
+        displayName: 'HR',
+      },
+    }),
+    prisma.roles.upsert({
+      where: { role: 'pmo' },
+      update: {},
+      create: {
+        role: 'pmo',
+        displayName: 'PMO member',
+      },
+    }),
+    prisma.roles.upsert({
+      where: { role: 'employee' },
+      update: {},
+      create: {
+        role: 'employee',
+        displayName: 'Employee',
+      },
+    }),
+  ]);
 
   if (process.env.ADMIN_EMAIL) {
     await prisma.users.upsert({

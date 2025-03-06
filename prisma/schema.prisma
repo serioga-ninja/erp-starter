@@ -13,16 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Roles {
-  role        String   @id
-  displayName String   @db.VarChar()
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  users Users[]
-}
-
 model Files {
   id        String   @id @default(uuid())
   name      String   @db.VarChar()
@@ -48,6 +38,26 @@ model Auth {
   refreshToken String @db.VarChar()
 }
 
+model Roles {
+  role        String   @id
+  displayName String   @db.VarChar()
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users UserRoles[]
+}
+
+model UserRoles {
+  userId String
+  roleId String
+
+  user Users @relation(fields: [userId], references: [id])
+  role Roles @relation(fields: [roleId], references: [role])
+
+  @@id([userId, roleId])
+}
+
 model Users {
   id                 String   @id @default(uuid())
   email              String   @unique @db.VarChar()
@@ -66,6 +76,13 @@ model Users {
   imageId String? @unique
   files   Files?  @relation(fields: [imageId], references: [id])
 
-  role       String
-  roleEntity Roles  @relation(fields: [role], references: [role])
+  roles UserRoles[]
+}
+
+model SecurityModeuls {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar()
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
