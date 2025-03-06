@@ -15,7 +15,8 @@ datasource db {
 
 model Roles {
   role        String   @id
-  displayName String
+  displayName String   @db.VarChar()
+  description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -24,8 +25,8 @@ model Roles {
 
 model Files {
   id        String   @id @default(uuid())
-  name      String
-  path      String
+  name      String   @db.VarChar()
+  path      String   @db.VarChar()
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -43,8 +44,8 @@ model EntityHistory {
 
 model Auth {
   userId       String @id
-  provider     String
-  refreshToken String
+  provider     String @db.VarChar()
+  refreshToken String @db.VarChar()
 }
 
 model Users {
