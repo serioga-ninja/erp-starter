@@ -22,19 +22,49 @@ model Roles {
   users Users[]
 }
 
-model Users {
-  id                    String   @id @default(uuid())
-  email                 String   @unique
-  firstName             String   @default("")
-  lastName              String   @default("")
-  password              String
-  salt                  String
-  requirePasswordChange Boolean  @default(true)
-  role                  String
-  entityStatus          String
-  activationCode        String   @db.VarChar(30)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+model Files {
+  id        String   @id @default(uuid())
+  name      String
+  path      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  roleEntity Roles @relation(fields: [role], references: [role])
+  user Users?
+}
+
+model EntityHistory {
+  entityId  String   @db.Uuid
+  state     Json     @db.JsonB
+  createdAt DateTime @default(now())
+
+  @@unique([entityId, createdAt], name: "entityId_createdAt_unique")
+  @@index([entityId, createdAt], name: "entityId_createdAt_index")
+}
+
+model Auth {
+  userId       String @id
+  provider     String
+  refreshToken String
+}
+
+model Users {
+  id                 String   @id @default(uuid())
+  email              String   @unique @db.VarChar()
+  personalEmail      String   @default("") @db.VarChar()
+  phone              String   @default("") @db.VarChar()
+  onboardingRequired Boolean  @default(false)
+  firstName          String   @default("") @db.VarChar()
+  lastName           String   @default("") @db.VarChar()
+  name               String   @db.VarChar()
+  dob                DateTime @db.Date
+  gender             String   @db.VarChar()
+  entityStatus       String   @db.VarChar()
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  imageId String? @unique
+  files   Files?  @relation(fields: [imageId], references: [id])
+
+  role       String
+  roleEntity Roles  @relation(fields: [role], references: [role])
 }

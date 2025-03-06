@@ -1,4 +1,4 @@
-import HelpersModule from './helpers.module';
+import CommonModule from './common.module';
 export * from './services';
 
-export { HelpersModule };
+export { CommonModule };

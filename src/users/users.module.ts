@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import SendRegistrationEmailHandler from './commands/send-registration-email.handler';
 import { IsEmailUnique } from './pipes';
-import { PasswordService, UsersSaga, UsersService } from './services';
+import { UsersSaga, UsersService } from './services';
 import { UsersController } from './users.controller';
 
 @Module({
@@ -12,7 +12,6 @@ import { UsersController } from './users.controller';
   providers: [
     UsersService,
     IsEmailUnique,
-    PasswordService,
     UsersSaga,
     SendRegistrationEmailHandler,
   ],

@@ -4,10 +4,8 @@ import { PrismaService } from '@app/common/db/prisma.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { Prisma, Users } from '@prisma/client';
-import { pick } from 'lodash';
+import CreateUserDto from '../dtos/create-user.dto';
 import UserCreatedEvent from '../events/user-created.event';
-import { CreateUserData, CreateUserReturn } from '../types';
-import PasswordService from './password.service';
 
 @Injectable()
 export default class UsersService {
@@ -15,7 +13,6 @@ export default class UsersService {
 
   constructor(
     private readonly _prisma: PrismaService,
-    private readonly _passwordService: PasswordService,
     private readonly _eventBus: EventBus,
     private readonly _string: StringService,
   ) {}
@@ -34,19 +31,12 @@ export default class UsersService {
     });
   }
 
-  async createUser(data: CreateUserData): Promise<CreateUserReturn> {
+  async createUser(data: CreateUserDto): Promise<Users> {
     this._logger.log(`Signing up user with email: ${data.email}`);
-
-    const { salt, hashedPassword } = this._passwordService.generatePassword(
-      data.password,
-    );
 
     const user = await this._prisma.users.create({
       data: {
         ...data,
-        password: hashedPassword,
-        salt,
-        activationCode: this._string.randomString(30),
         entityStatus: EntityStatus.Registered,
       },
     });
@@ -55,14 +45,6 @@ export default class UsersService {
 
     this._eventBus.publish(new UserCreatedEvent(user));
 
-    return pick(user, [
-      'id',
-      'email',
-      'firstName',
-      'lastName',
-      'role',
-      'updatedAt',
-      'createdAt',
-    ] as (keyof CreateUserReturn)[]);
+    return user;
   }
 }

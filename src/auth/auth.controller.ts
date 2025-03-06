@@ -1,27 +1,47 @@
+import { GoogleOauthService } from '@app/common';
 import {
-  Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
+  Req,
+  Res,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { ActivateUserDto } from './dtos';
-import SignInDto from './dtos/sign-in.dto';
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { TOKEN_KEY } from './constant';
+import { AuthService } from './services';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly _authService: AuthService) {}
+  constructor(
+    private readonly _authService: AuthService,
+    private readonly _googleOauthService: GoogleOauthService,
+  ) {}
 
-  @HttpCode(HttpStatus.OK)
-  @Post('login')
-  signIn(@Body() signInDto: SignInDto) {
-    return this._authService.signIn(signInDto.email);
+  @Get('google')
+  auth(@Req() req: FastifyRequest, @Res() res: FastifyReply) {
+    const authorizationUrl = this._googleOauthService.generateRedirectUrl(req);
+
+    res.redirect(authorizationUrl, 302);
   }
 
-  @Post('activate/:activationCode')
-  handleActivateUser(@Param('activationCode') body: ActivateUserDto) {
-    return this._authService.activateUser(body);
+  @Get('google/callback')
+  async googleAuthCallback(
+    @Req() req: FastifyRequest,
+    @Res() res: FastifyReply,
+  ) {
+    const result = await this._googleOauthService.validateCallbackRequest(req);
+    const token = await this._authService.signInWithGoogle(result);
+
+    req.session.set(TOKEN_KEY, token.token);
+
+    return res.status(HttpStatus.OK);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('logout')
+  logout(@Req() req: FastifyRequest) {
+    req.session.delete();
   }
 }

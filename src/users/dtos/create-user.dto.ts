@@ -1,7 +1,26 @@
-import { IsEmail, IsString, Validate } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEmail,
+  IsString,
+  Validate,
+} from 'class-validator';
 import { IsEmailUnique } from '../pipes';
 
 export default class CreateUserDto {
+  @IsEmail()
+  @Validate(IsEmailUnique)
+  email: string;
+
+  @IsEmail()
+  personalEmail: string;
+
+  @IsString()
+  phone: string;
+
+  @IsBoolean()
+  onboardingRequired: boolean;
+
   @IsString()
   firstName: string;
 
@@ -9,12 +28,14 @@ export default class CreateUserDto {
   lastName: string;
 
   @IsString()
-  password: string;
+  name: string;
+
+  @IsDate()
+  dob: Date;
+
+  @IsString()
+  gender: string;
 
   @IsString()
   role: string;
-
-  @IsEmail()
-  @Validate(IsEmailUnique)
-  email: string;
 }
