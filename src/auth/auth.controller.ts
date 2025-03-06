@@ -7,9 +7,11 @@ import {
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { TOKEN_KEY } from './constant';
+import { AuthGuard } from './guards';
 import { AuthService } from './services';
 
 @Controller('auth')
@@ -41,6 +43,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('logout')
+  @UseGuards(AuthGuard)
   logout(@Req() req: FastifyRequest) {
     req.session.delete();
   }
