@@ -1,9 +1,10 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
+  NotFoundException,
 } from '@nestjs/common';
 import { type FastifyReply, FastifyRequest } from 'fastify';
 
@@ -13,18 +14,21 @@ export default class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let message: string | object = 'Internal server error';
+
+    switch (true) {
+      case exception instanceof NotFoundException:
+        status = HttpStatus.NOT_FOUND;
+        message = 'Resource not found';
+        break;
+      case exception instanceof HttpException:
+        status = exception.getStatus();
+        message = exception.getResponse();
+        break;
+    }
 
     console.log(exception);
-
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
-
-    const message =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : 'Internal server error';
 
     response.status(status).send({
       statusCode: status,

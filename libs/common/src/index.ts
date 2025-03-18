@@ -5,3 +5,4 @@ export * from './constant';
 export * from './emails';
 export * from './helpers';
 export * from './oauth';
+export * from './authorization';

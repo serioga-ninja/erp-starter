@@ -32,9 +32,7 @@ export default class MyJwtService {
   }
 
   generateToken<T extends object>(tokenPayload: T): TokenResponse {
-    const jwtExpiresIn = this._configService.get<number | undefined>(
-      'JWT_EXPIRATION_SEC',
-    );
+    const jwtExpiresIn = this._configService.get<number>('JWT_EXPIRATION_SEC');
     let expires: undefined | Date;
 
     if (jwtExpiresIn) {
@@ -45,7 +43,7 @@ export default class MyJwtService {
     const token = this._jwtService.sign(tokenPayload, {
       algorithm: 'HS256',
       secret: this._configService.get('JWT_SECRET'),
-      expiresIn: jwtExpiresIn,
+      expiresIn: `${jwtExpiresIn}s`,
     });
 
     return {

@@ -1,5 +1,5 @@
 import { GoogleProfile, ProjectConfig } from '@app/common';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import type { FastifyRequest } from 'fastify';
@@ -9,6 +9,7 @@ import * as url from 'url';
 
 @Injectable()
 export default class GoogleOauthService {
+  private readonly _logs = new Logger(GoogleOauthService.name);
   private readonly _oauth2Client: OAuth2Client;
 
   constructor(
@@ -34,6 +35,8 @@ export default class GoogleOauthService {
     // Store state in the session
     req.session.set('state', state);
 
+    this._logs.log(req.session.data());
+
     // Generate a url that asks permissions for the Drive activity and Google Calendar scope
     return this._oauth2Client.generateAuthUrl({
       // 'online' (default) or 'offline' (gets refresh_token)
@@ -55,7 +58,9 @@ export default class GoogleOauthService {
       // An error response e.g. error=access_denied
       // console.log('Error:' + q.error);
     } else if (q.state !== req.session.state) {
-      //check state value
+      req.session.regenerate();
+      req.session.delete();
+
       throw Error('State mismatch. Possible CSRF attack');
     } else {
       // Get access and refresh tokens (if access_type is offline)

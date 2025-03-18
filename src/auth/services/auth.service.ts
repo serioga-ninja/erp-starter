@@ -13,6 +13,9 @@ export default class AuthService {
   async signInWithGoogle(googleProfile: GoogleProfile) {
     const user = await this._prisma.users.findFirst({
       where: { email: googleProfile.email },
+      include: {
+        roles: true,
+      },
     });
 
     if (!user) {
@@ -24,6 +27,7 @@ export default class AuthService {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
+      roles: user.roles.map(({ roleId }) => roleId),
     };
 
     return this._jwtService.generateToken(tokenPayload);

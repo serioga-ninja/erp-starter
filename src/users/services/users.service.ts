@@ -1,7 +1,7 @@
 import { StringService } from '@app/common';
 import { EntityStatus } from '@app/common/constant';
 import { PrismaService } from '@app/common/db/prisma.service';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { Prisma, Users } from '@prisma/client';
 import CreateUserDto from '../dtos/create-user.dto';
@@ -23,12 +23,20 @@ export default class UsersService {
     }));
   }
 
-  getOneUserBy(
+  async getOneUserBy(
     userWhereUniqueInput: Prisma.UsersWhereUniqueInput,
-  ): Promise<Users | null> {
-    return this._prisma.users.findUnique({
+  ): Promise<Users> {
+    const user = await this._prisma.users.findFirst({
       where: userWhereUniqueInput,
     });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User not found: ${JSON.stringify(userWhereUniqueInput)}`,
+      );
+    }
+
+    return user;
   }
 
   async createUser(data: CreateUserDto): Promise<Users> {

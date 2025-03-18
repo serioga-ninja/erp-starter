@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { TOKEN_KEY } from './constant';
-import { AuthGuard } from './guards';
+import { AuthenticationGuard } from './guards';
 import { AuthService } from './services';
 
 @Controller('auth')
@@ -29,21 +29,19 @@ export class AuthController {
   }
 
   @Get('google/callback')
-  async googleAuthCallback(
-    @Req() req: FastifyRequest,
-    @Res() res: FastifyReply,
-  ) {
+  async googleAuthCallback(@Req() req: FastifyRequest) {
     const result = await this._googleOauthService.validateCallbackRequest(req);
     const token = await this._authService.signInWithGoogle(result);
 
+    req.session.regenerate();
     req.session.set(TOKEN_KEY, token.token);
 
-    return res.status(HttpStatus.OK);
+    return token;
   }
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Post('logout')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthenticationGuard)
   logout(@Req() req: FastifyRequest) {
     req.session.delete();
   }

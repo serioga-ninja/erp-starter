@@ -5,7 +5,7 @@ export const projectConfigSchema = Joi.object<ProjectConfig>({
   PORT: Joi.number().required(),
   DATABASE_URL: Joi.string().required(),
   JWT_SECRET: Joi.string().required(),
-  JWT_EXPIRATION_SEC: Joi.string().allow('').optional(),
+  JWT_EXPIRATION_SEC: Joi.number().optional(),
 
   GOOGLE_CALLBACK_URL: Joi.string().required(),
   GOOGLE_CLIENT_ID: Joi.string().required(),

@@ -1,4 +1,8 @@
 import { EntityStatus } from '../libs/common/src/constant';
+import {
+  ResourceActions,
+  Resources,
+} from '../libs/common/src/authorization/enums';
 import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
 import * as process from 'node:process';
@@ -9,6 +13,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   await Promise.all([
+    //#region roles
     prisma.roles.upsert({
       where: { role: 'admin' },
       update: {},
@@ -41,6 +46,67 @@ async function main() {
         displayName: 'Employee',
       },
     }),
+    //#endregion
+
+    //#region permissions
+    prisma.resources.upsert({
+      where: { name: Resources.Users },
+      update: {},
+      create: {
+        permissions: [
+          ResourceActions.Create,
+          ResourceActions.Read,
+          ResourceActions.Update,
+          ResourceActions.Delete,
+        ],
+        name: Resources.Users,
+        displayName: 'Users',
+        description: 'Users resource',
+        rolesPermissions: {
+          create: [
+            {
+              roleId: 'admin',
+              permissions: [
+                ResourceActions.Create,
+                ResourceActions.Read,
+                ResourceActions.Update,
+                ResourceActions.Delete,
+              ],
+            },
+          ],
+        },
+      },
+    }),
+    prisma.resources.upsert({
+      where: { name: Resources.Permissions },
+      update: {},
+      create: {
+        permissions: [
+          ResourceActions.Create,
+          ResourceActions.Read,
+          ResourceActions.Update,
+          ResourceActions.Delete,
+        ],
+        name: Resources.Permissions,
+        displayName: 'Permissions',
+        description: 'Permissions resource',
+        rolesPermissions: {
+          create: [
+            {
+              roleId: 'admin',
+              permissions: [
+                ResourceActions.Create,
+                ResourceActions.Read,
+                ResourceActions.Update,
+                ResourceActions.Delete,
+              ],
+            },
+          ],
+        },
+      },
+    }),
+
+    //#endregion
   ]);
 
   if (process.env.ADMIN_EMAIL) {
@@ -57,10 +123,16 @@ async function main() {
         name: 'Mrs.',
         dob: '1990-06-22T20:00:00.000Z',
         gender: 'male',
-        role: 'superadmin',
         createdAt: new Date(),
         entityStatus: EntityStatus.Active,
         updatedAt: new Date(),
+        roles: {
+          create: [
+            {
+              roleId: 'admin',
+            },
+          ],
+        },
       },
     });
   }

@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Files {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @db.Uuid
   name      String   @db.VarChar()
   path      String   @db.VarChar()
   createdAt DateTime @default(now())
@@ -38,18 +38,57 @@ model Auth {
   refreshToken String @db.VarChar()
 }
 
-model Roles {
-  role        String   @id
+model Resources {
+  id          String   @id @default(uuid()) @db.Uuid()
+  parentId    String?  @db.Uuid()
   displayName String   @db.VarChar()
   description String
+  permissions Json     @default("[]") @db.JsonB()
+  name        String   @unique @db.VarChar()
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  users UserRoles[]
+  parent           Resources?                 @relation("ModulesToModules", fields: [parentId], references: [id])
+  children         Resources[]                @relation("ModulesToModules")
+  rolesPermissions ResourcesRolePermissions[]
+  usersPermissions ResourcesUserPermissions[]
+}
+
+model ResourcesRolePermissions {
+  roleId      String
+  moduleId    String @db.Uuid()
+  permissions Json   @default("[]") @db.JsonB
+
+  role   Roles     @relation(fields: [roleId], references: [role])
+  module Resources @relation(fields: [moduleId], references: [id])
+
+  @@id([roleId, moduleId])
+}
+
+model ResourcesUserPermissions {
+  userId      String @db.Uuid()
+  moduleId    String @db.Uuid()
+  permissions Json   @default("[]") @db.JsonB
+
+  user   Users     @relation(fields: [userId], references: [id])
+  module Resources @relation(fields: [moduleId], references: [id])
+
+  @@id([userId, moduleId])
+}
+
+model Roles {
+  role        String   @id
+  displayName String   @db.VarChar()
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users   UserRoles[]
+  permissions ResourcesRolePermissions[]
 }
 
 model UserRoles {
-  userId String
+  userId String @db.Uuid()
   roleId String
 
   user Users @relation(fields: [userId], references: [id])
@@ -59,7 +98,7 @@ model UserRoles {
 }
 
 model Users {
-  id                 String   @id @default(uuid())
+  id                 String   @id @default(uuid()) @db.Uuid()
   email              String   @unique @db.VarChar()
   personalEmail      String   @default("") @db.VarChar()
   phone              String   @default("") @db.VarChar()
@@ -73,14 +112,15 @@ model Users {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  imageId String? @unique
+  imageId String? @unique @db.Uuid()
   files   Files?  @relation(fields: [imageId], references: [id])
 
-  roles UserRoles[]
+  roles       UserRoles[]
+  permissions ResourcesUserPermissions[]
 }
 
 model SecurityModeuls {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid()) @db.Uuid()
   name        String   @db.VarChar()
   description String
   createdAt   DateTime @default(now())

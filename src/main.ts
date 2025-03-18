@@ -33,6 +33,9 @@ async function bootstrap() {
     secret: config.get<string>('SESSION_SECRET'),
     salt: config.get<string>('SESSION_SALT'),
     expiry: Number.MAX_SAFE_INTEGER,
+    cookie: {
+      path: '/',
+    },
   });
   await app.register(fastifyHelmet);
   await app.register(fastifyCsrfProtection, { cookieOpts: { signed: true } });
